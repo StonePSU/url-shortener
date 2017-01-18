@@ -3,7 +3,8 @@ var app = express();
 const fs = require('fs');
 const urlExists = require('url-exists');
 var mongo = require('mongodb').MongoClient
-var dbURL = 'mongodb://localhost:27017/urls';
+//var dbURL = 'mongodb://localhost:27017/urls';
+var dbURL = process.env.MONGOLAB_URI;
 
 app.use(function(req, res, next) {
    console.log(`LOG: Request.URL is ${req.url}`);
@@ -29,8 +30,10 @@ app.get("/:id", function(req, res) {
    
    if (!isNaN(id)) {
        mongo.connect(dbURL, function(err, db) {
-           if (err) throw err;
-           console
+           if (err) {
+            console.log("There was an error connecting to the database");   
+           }
+           
            var urls = db.collection('url');
            urls.find({"id": id}).toArray(function(err, results) {
               if (err) throw err;
@@ -77,7 +80,7 @@ console.log("Server is running");
 function findURL(url, req, res) {
   mongo.connect(dbURL, function(err, db) {
     if (err) {
-      throw err
+      console.log("There was an error connecting to the database");
     } else {
       // console.log("was able to connect to db");
       var urls = db.collection('url');
@@ -101,7 +104,7 @@ function insertURL(oldURL, req, res) {
     // first we have to find the maximum id of any url in the system so we can increment for the new url
     mongo.connect(dbURL, function(err, db) {
        if (err) {
-           throw err;
+           console.log("There was an error connecting to the database");
        } else {
            var urls = db.collection('url');
            urls.aggregate([{
